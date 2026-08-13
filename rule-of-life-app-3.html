@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rule of Life</title>
+<meta name="description" content="A personal tracker for faith, fitness, and finances." />
+
+<link rel="manifest" id="manifest-link" />
+<meta name="theme-color" content="#1C2B33" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Rule of Life" />
+<link rel="apple-touch-icon" id="apple-icon-link" />
+<link rel="icon" id="favicon-link" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #1C2B33; --parchment: #F7F3EC; --parchment-dim: #EFE9DD;
+  --text: #2A2A28; --text-dim: #6B6459;
+  --faith: #B08D57; --fitness: #C1543C; --finance: #4A6B5A; --line: #DED5C3;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.tk-root {
+  background: var(--ink);
+  background-image: radial-gradient(circle at 15% 0%, rgba(176,141,87,0.08), transparent 40%), radial-gradient(circle at 85% 100%, rgba(74,107,90,0.08), transparent 40%);
+  min-height: 100vh; font-family: 'Inter', sans-serif; color: var(--text);
+  padding: 32px 16px 80px;
+}
+.tk-loading { display: flex; align-items: center; justify-content: center; }
+.tk-loading-text { color: var(--parchment); font-family: 'Source Serif 4', serif; font-size: 18px; opacity: 0.7; }
+.tk-shell { max-width: 640px; margin: 0 auto; }
+
+.tk-install-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--faith); color: #fff; border-radius: 12px; padding: 11px 14px; margin-bottom: 14px; }
+.tk-install-text { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.tk-install-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.tk-install-btn { background: #fff; color: var(--faith); border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+.tk-install-dismiss { background: transparent; border: none; color: #fff; opacity: 0.8; cursor: pointer; padding: 4px; display: flex; }
+
+.tk-app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 0 4px; }
+.tk-app-title { font-family: 'Source Serif 4', serif; font-weight: 700; font-style: italic; font-size: 26px; color: var(--parchment); }
+.tk-app-title-mark { color: var(--faith); font-style: normal; margin-right: 6px; }
+.tk-header-right { display: flex; align-items: center; gap: 8px; }
+.tk-icon-btn { background: rgba(247,243,236,0.1); border: none; color: var(--parchment); border-radius: 8px; padding: 7px; cursor: pointer; display: flex; }
+.tk-icon-btn:hover { background: rgba(247,243,236,0.18); }
+.tk-save-indicator { font-size: 11px; color: var(--parchment); opacity: 0.5; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; min-width: 44px; }
+
+.tk-import-error { display: flex; align-items: center; gap: 8px; background: var(--fitness); color: #fff; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+.tk-import-error span { flex: 1; }
+.tk-import-error button { background: transparent; border: none; color: #fff; opacity: 0.85; cursor: pointer; padding: 3px; flex-shrink: 0; display: flex; }
+
+.tk-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: rgba(0,0,0,0.18); padding: 5px; border-radius: 14px; }
+.tk-tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 10px; border-radius: 10px; border: none; cursor: pointer; background: transparent; color: rgba(247,243,236,0.55); font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; }
+.tk-tab-btn:hover { color: rgba(247,243,236,0.85); }
+.tk-tab-btn.active { background: var(--parchment); color: var(--ink); }
+.tk-tab-btn.active.faith { color: #7A5F35; }
+.tk-tab-btn.active.fitness { color: #8E3B28; }
+.tk-tab-btn.active.finance { color: #33493D; }
+
+.tk-tab-body { display: flex; flex-direction: column; gap: 14px; }
+.tk-hero { background: var(--parchment); border-radius: 18px; padding: 22px; display: flex; align-items: center; justify-content: space-between; border-top: 3px solid var(--faith); }
+.tk-hero.fitness { border-top-color: var(--fitness); }
+.tk-hero.finance { border-top-color: var(--finance); }
+.tk-hero-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 6px; }
+.tk-hero-title { font-family: 'Source Serif 4', serif; font-size: 21px; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.tk-stat-row { display: flex; gap: 10px; }
+.tk-stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; }
+.tk-stat-value.faith-c { color: var(--faith); }
+.tk-stat-value.fitness-c { color: var(--fitness); }
+.tk-stat-value.finance-c { color: var(--finance); }
+.tk-stat-label { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.tk-hero-progress { flex-shrink: 0; }
+.tk-ring { width: 78px; height: 78px; transform: rotate(-90deg); }
+.tk-ring-track { fill: none; stroke: var(--parchment-dim); stroke-width: 8; }
+.tk-ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; stroke: var(--faith); transition: stroke-dashoffset 0.6s ease; }
+.tk-ring-text { transform: rotate(90deg) translate(0px, 0px); transform-origin: 60px 60px; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; fill: var(--text); }
+
+.tk-card { background: var(--parchment); border-radius: 16px; padding: 18px; }
+.tk-section-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 12px; }
+.tk-inline-stat { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.tk-field-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.tk-input, .tk-textarea, select.tk-input { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); outline: none; }
+.tk-input:focus, .tk-textarea:focus { border-color: var(--text-dim); }
+.tk-input-narrow { max-width: 120px; flex-shrink: 0; }
+.tk-textarea { resize: vertical; font-family: 'Inter', sans-serif; width: 100%; }
+.tk-checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text); cursor: pointer; }
+.tk-checkbox-label input { width: 16px; height: 16px; accent-color: var(--faith); }
+.tk-btn { border: none; border-radius: 10px; padding: 10px 18px; font-weight: 600; font-size: 13.5px; color: #fff; cursor: pointer; background: var(--faith); }
+.tk-btn.fitness { background: var(--fitness); }
+.tk-btn.finance { background: var(--finance); }
+.tk-btn:hover { opacity: 0.88; }
+.tk-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.tk-collapse-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.tk-collapse-title { display: flex; align-items: center; gap: 6px; font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 16px; color: var(--text); }
+.tk-collapse-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+.tk-books-wrap { margin-top: 14px; display: flex; flex-direction: column; gap: 16px; }
+.tk-book-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faith); font-weight: 600; margin-bottom: 7px; }
+.tk-book-list { display: flex; flex-direction: column; gap: 4px; }
+.tk-book-row { width: 100%; display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 13.5px; color: var(--text); }
+.tk-book-row.complete { border-color: var(--faith); background: rgba(176,141,87,0.08); }
+.tk-book-row-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
+.tk-book-row.complete .tk-book-row-check { background: var(--faith); border-color: var(--faith); }
+.tk-book-row-name { flex: 1; text-align: left; font-weight: 500; }
+.tk-book-row-count { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-dim); }
+.tk-chapter-panel { background: #fff; border: 1px solid var(--line); border-top: none; border-radius: 0 0 10px 10px; padding: 12px; margin-top: -5px; }
+.tk-chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; }
+.tk-chapter-cell { border: 1px solid var(--line); background: var(--parchment); border-radius: 6px; padding: 6px 0; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-dim); cursor: pointer; text-align: center; }
+.tk-chapter-cell.on { background: var(--faith); border-color: var(--faith); color: #fff; font-weight: 600; }
+.tk-chapter-actions { display: flex; gap: 8px; margin-top: 10px; }
+.tk-chapter-mark-all, .tk-chapter-mark-none { border: 1px solid var(--line); background: var(--parchment); border-radius: 8px; padding: 5px 10px; font-size: 11.5px; font-weight: 600; color: var(--text-dim); cursor: pointer; }
+.tk-chapter-mark-all:hover { color: var(--faith); border-color: var(--faith); }
+.tk-chapter-mark-none:hover { color: var(--fitness); border-color: var(--fitness); }
+
+.tk-log-list { display: flex; flex-direction: column; gap: 2px; }
+.tk-log-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.tk-log-row:last-child { border-bottom: none; }
+.tk-log-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); width: 48px; flex-shrink: 0; }
+.tk-log-icon { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--parchment-dim); }
+.tk-log-icon.fitness { color: var(--fitness); }
+.tk-log-main { flex: 1; min-width: 0; }
+.tk-log-title { font-size: 13.5px; font-weight: 500; color: var(--text); }
+.tk-log-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+.tk-log-remove { border: none; background: none; color: var(--text-dim); cursor: pointer; padding: 4px; flex-shrink: 0; display: flex; }
+.tk-log-remove:hover { color: var(--fitness); }
+.tk-log-amt { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13.5px; flex-shrink: 0; }
+.tk-log-amt.income { color: var(--finance); }
+.tk-log-amt.expense { color: var(--fitness); }
+.tk-empty { color: var(--text-dim); font-size: 13px; font-style: italic; padding: 6px 0; }
+.tk-tag { display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 20px; margin-left: 6px; font-weight: 600; }
+.tk-tag.faith { background: rgba(176,141,87,0.15); color: var(--faith); }
+
+.tk-subnav { display: flex; gap: 4px; background: rgba(0,0,0,0.06); padding: 4px; border-radius: 12px; }
+.tk-subnav button { flex: 1; border: none; background: transparent; padding: 8px 6px; border-radius: 8px; font-weight: 600; font-size: 12.5px; color: var(--text-dim); cursor: pointer; }
+.tk-subnav button.active { background: var(--parchment); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.tk-type-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+.tk-type-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px; font-weight: 600; font-size: 12.5px; color: var(--text-dim); cursor: pointer; }
+.tk-type-btn.active.fitness { background: var(--fitness); border-color: var(--fitness); color: #fff; }
+.tk-type-btn.active.finance { background: var(--finance); border-color: var(--finance); color: #fff; }
+
+.tk-water-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.tk-water-icon { color: var(--fitness); flex-shrink: 0; }
+.tk-water-value { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 20px; }
+.tk-water-btns { display: flex; gap: 6px; margin-left: auto; }
+.tk-water-btns button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; }
+.tk-water-btns button:hover { border-color: var(--fitness); color: var(--fitness); }
+
+.tk-progress-track { height: 8px; background: var(--parchment-dim); border-radius: 20px; overflow: hidden; }
+.tk-progress-fill { height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+.tk-delta-note { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-dim); margin-top: 10px; }
+
+.tk-fin-summary { display: flex; gap: 10px; }
+.tk-fin-stat { flex: 1; background: #fff; border-radius: 12px; padding: 12px; border: 1px solid var(--line); }
+.tk-fin-stat-label { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.tk-fin-stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 17px; }
+.tk-fin-stat-value.income { color: var(--finance); }
+.tk-fin-stat-value.expense { color: var(--fitness); }
+
+.tk-bucket-chart { display: flex; align-items: flex-end; gap: 10px; height: 120px; padding-top: 10px; }
+.tk-bucket-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.tk-bucket-bars { display: flex; align-items: flex-end; gap: 3px; height: 90px; width: 100%; justify-content: center; }
+.tk-bucket-bar { width: 9px; border-radius: 3px 3px 0 0; min-height: 2px; }
+.tk-bucket-bar.income { background: var(--finance); }
+.tk-bucket-bar.expense { background: var(--fitness); }
+.tk-bucket-label { font-size: 10px; color: var(--text-dim); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+.tk-legend { display: flex; gap: 16px; margin-top: 10px; justify-content: center; }
+.tk-legend span { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-dim); }
+.tk-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.tk-legend i.income { background: var(--finance); }
+.tk-legend i.expense { background: var(--fitness); }
+
+.tk-cat-list { display: flex; flex-direction: column; gap: 10px; }
+.tk-cat-row { display: grid; grid-template-columns: 90px 1fr 70px; align-items: center; gap: 10px; }
+.tk-cat-name { font-size: 12.5px; color: var(--text); }
+.tk-cat-amt { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; text-align: right; color: var(--text); }
+
+.tk-modal-backdrop { position: fixed; inset: 0; background: rgba(10,14,17,0.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+.tk-modal { background: var(--parchment); border-radius: 16px; padding: 24px; max-width: 380px; width: 100%; text-align: center; }
+.tk-modal-icon { width: 42px; height: 42px; border-radius: 50%; background: rgba(193,84,60,0.12); color: var(--fitness); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+.tk-modal-title { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.tk-modal-body { font-size: 13.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 20px; }
+.tk-modal-body strong { color: var(--text); }
+.tk-modal-actions { display: flex; gap: 8px; }
+.tk-modal-cancel, .tk-modal-confirm { flex: 1; border: none; border-radius: 10px; padding: 11px; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.tk-modal-cancel { background: #fff; border: 1px solid var(--line); color: var(--text); }
+.tk-modal-cancel:hover { border-color: var(--text-dim); }
+.tk-modal-confirm { background: var(--fitness); color: #fff; }
+.tk-modal-confirm:hover { opacity: 0.9; }
+
+@media (max-width: 480px) {
+  .tk-hero { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .tk-hero-progress { align-self: center; }
+  .tk-cat-row { grid-template-columns: 70px 1fr 60px; }
+  .tk-chapter-grid { grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div id="root"><div class="tk-root tk-loading"><div class="tk-loading-text">Opening your ledger…</div></div></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   PWA SETUP (no external deps — inline SVG icon + blob manifest)
+   ============================================================ */
+(function setupPWA() {
+  try {
+    const iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="36" fill="#1C2B33"/><text x="96" y="128" font-size="110" text-anchor="middle" font-family="Georgia, serif" fill="#B08D57">&#10022;</text></svg>';
+    const iconURL = "data:image/svg+xml;base64," + btoa(iconSVG);
+    document.getElementById('apple-icon-link').href = iconURL;
+    document.getElementById('favicon-link').href = iconURL;
+
+    const manifest = {
+      name: "Rule of Life", short_name: "Rule of Life",
+      description: "Track Faith, Fitness, and Finances.",
+      start_url: ".", display: "standalone",
+      background_color: "#1C2B33", theme_color: "#1C2B33",
+      icons: [{ src: iconURL, sizes: "192x192", type: "image/svg+xml" }, { src: iconURL, sizes: "512x512", type: "image/svg+xml" }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+    if ('serviceWorker' in navigator) {
+      const swCode = "const CACHE='rule-of-life-v2';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{e.respondWith(caches.open(CACHE).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(f=>{if(e.request.method==='GET'&&f.status===200)c.put(e.request,f.clone());return f;}).catch(()=>r))));});";
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function(){});
+    }
+  } catch (e) { /* PWA setup is a nice-to-have; app must still work without it */ }
+
+  window.__deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.__deferredInstallPrompt = e;
+    window.dispatchEvent(new Event('rol-install-available'));
+  });
+})();
+
+/* ============================================================
+   DATA
+   ============================================================ */
+const BIBLE = {
+  "Law": {"Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34},
+  "History": {"Joshua":24,"Judges":21,"Ruth":4,"1 Samuel":31,"2 Samuel":24,"1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,"Ezra":10,"Nehemiah":13,"Esther":10},
+  "Wisdom & Poetry": {"Job":42,"Psalms":150,"Proverbs":31,"Ecclesiastes":12,"Song of Solomon":8},
+  "Major Prophets": {"Isaiah":66,"Jeremiah":52,"Lamentations":5,"Ezekiel":48,"Daniel":12},
+  "Minor Prophets": {"Hosea":14,"Joel":3,"Amos":9,"Obadiah":1,"Jonah":4,"Micah":7,"Nahum":3,"Habakkuk":3,"Zephaniah":3,"Haggai":2,"Zechariah":14,"Malachi":4},
+  "Gospels": {"Matthew":28,"Mark":16,"Luke":24,"John":21},
+  "History (NT)": {"Acts":28},
+  "Pauline Epistles": {"Romans":16,"1 Corinthians":16,"2 Corinthians":13,"Galatians":6,"Ephesians":6,"Philippians":4,"Colossians":4,"1 Thessalonians":5,"2 Thessalonians":3,"1 Timothy":6,"2 Timothy":4,"Titus":3,"Philemon":1},
+  "General Epistles": {"Hebrews":13,"James":5,"1 Peter":5,"2 Peter":3,"1 John":5,"2 John":1,"3 John":1,"Jude":1},
+  "Prophecy": {"Revelation":22}
+};
+const OT_SECTIONS = ["Law", "History", "Wisdom & Poetry", "Major Prophets", "Minor Prophets"];
+const NT_SECTIONS = ["Gospels", "History (NT)", "Pauline Epistles", "General Epistles", "Prophecy"];
+const TOTAL_CHAPTERS = Object.values(BIBLE).reduce(function(sum, section) { return sum + Object.values(section).reduce(function(a,b){return a+b;}, 0); }, 0);
+function bookChapterCount(book) { for (const sec of Object.values(BIBLE)) if (sec[book]) return sec[book]; return 0; }
+
+const ACTIVITY_TYPES = [
+  { key: 'run', label: 'Run' },
+  { key: 'workout', label: 'Workout' },
+  { key: 'practice', label: 'Practice' }
+];
+const FIN_CATEGORIES_INCOME = ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'];
+const FIN_CATEGORIES_EXPENSE = ['Housing', 'Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'Debt', 'Savings', 'Other'];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function dayOfWeekMonday(d) { const day = new Date(d + 'T00:00:00').getDay(); return day === 0 ? 6 : day - 1; }
+function startOfWeek(d) { const dt = new Date(d + 'T00:00:00'); dt.setDate(dt.getDate() - dayOfWeekMonday(d)); return dt.toISOString().slice(0, 10); }
+function monthKey(d) { return d.slice(0, 7); }
+function yearKey(d) { return d.slice(0, 4); }
+function fmtMoney(n) { return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtDateShort(d) { return new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, function(c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; });
+}
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+const STORAGE_KEY = 'ruleOfLife:v2:state';
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); }
+  catch (e) { console.error('load failed', e); }
+  return null;
+}
+function persistState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { console.error('save failed', e); }
+}
+function defaultState() {
+  return {
+    faith: { chaptersRead: {}, dailyReadings: {} },
+    fitness: { activities: [], meals: [], weight: [], water: {}, sleep: {} },
+    finance: { entries: [] }
+  };
+}
+function deepMerge(base, incoming) {
+  if (!incoming) return base;
+  const out = Object.assign({}, base);
+  for (const k of Object.keys(base)) {
+    if (typeof base[k] === 'object' && !Array.isArray(base[k]) && base[k] !== null) {
+      out[k] = Object.assign({}, base[k], incoming[k] || {});
+    } else {
+      out[k] = incoming[k] !== undefined ? incoming[k] : base[k];
+    }
+  }
+  return out;
+}
+
+/* ============================================================
+   APP STATE
+   ============================================================ */
+const App = {
+  state: defaultState(),
+  tab: 'faith',
+  fitnessSubview: 'log',
+  financePeriod: 'daily',
+  financeType: 'expense',
+  financeCategory: 'Food',
+  expandedOT: true,
+  expandedNT: true,
+  expandedBook: null,
+  saveStatus: 'idle',
+  importError: '',
+  pendingImport: null,
+  draft: {
+    passage: '', notes: '',
+    actType: 'run', actDetail: '', actDuration: '', actNotes: '',
+    mealDesc: '', mealCal: '',
+    weightVal: '',
+    finAmount: '', finNote: ''
+  }
+};
+
+function update(mutator) {
+  mutator(App.state);
+  persistState(App.state);
+  App.saveStatus = 'saved';
+  render();
+  setTimeout(function() {
+    if (App.saveStatus === 'saved') { App.saveStatus = 'idle'; renderHeaderOnly(); }
+  }, 1400);
+}
+
+/* ============================================================
+   ICONS (inline SVG strings — zero dependencies)
+   ============================================================ */
+const ICONS = {
+  book: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  dumbbell: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>',
+  dollar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  trendUp: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  trendDown: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>',
+  x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  chevDown: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+  chevRight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  download: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  upload: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  alert: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  footprints: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/></svg>',
+  users: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  utensils: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+  moon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+  droplet: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69s-5.5 6.16-5.5 10.31a5.5 5.5 0 0 0 11 0c0-4.15-5.5-10.31-5.5-10.31Z"/></svg>',
+  check: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+};
+function activityIcon(type) { return type === 'run' ? ICONS.footprints : type === 'practice' ? ICONS.users : ICONS.dumbbell; }
+
+/* ============================================================
+   FAITH TAB
+   ============================================================ */
+function bookProgress(book) {
+  const n = bookChapterCount(book);
+  let read = 0;
+  for (let c = 1; c <= n; c++) if (App.state.faith.chaptersRead[book + ':' + c]) read++;
+  return { read: read, total: n };
+}
+function sectionProgress(sections) {
+  let read = 0, total = 0;
+  sections.forEach(function(sec) {
+    Object.keys(BIBLE[sec]).forEach(function(book) {
+      const p = bookProgress(book); read += p.read; total += p.total;
+    });
+  });
+  return { read: read, total: total };
+}
+function computeStreak() {
+  const readings = App.state.faith.dailyReadings;
+  const dates = Object.keys(readings).filter(function(d) { return readings[d] && readings[d].passage; }).sort();
+  if (dates.length === 0) return 0;
+  const today = todayStr();
+  let count = 0;
+  let cursor = new Date(today + 'T00:00:00');
+  const set = new Set(dates);
+  if (!set.has(today)) cursor.setDate(cursor.getDate() - 1);
+  while (set.has(cursor.toISOString().slice(0, 10))) { count++; cursor.setDate(cursor.getDate() - 1); }
+  return count;
+}
+
+function renderFaithTab() {
+  const today = todayStr();
+  const todayEntry = App.state.faith.dailyReadings[today];
+  const totalChaptersRead = Object.values(App.state.faith.chaptersRead).filter(Boolean).length;
+  const otProg = sectionProgress(OT_SECTIONS);
+  const ntProg = sectionProgress(NT_SECTIONS);
+  const streak = computeStreak();
+  const pct = totalChaptersRead / TOTAL_CHAPTERS;
+  const circumference = 2 * Math.PI * 52;
+
+  function renderBookRow(book) {
+    const p = bookProgress(book);
+    const isOpen = App.expandedBook === book;
+    const complete = p.read === p.total && p.total > 0;
+    let html = '<div class="tk-book-block">';
+    html += '<button class="tk-book-row ' + (complete ? 'complete' : '') + '" data-action="toggle-book" data-book="' + esc(book) + '">';
+    html += '<span class="tk-book-row-check">' + (complete ? ICONS.check : '') + '</span>';
+    html += '<span class="tk-book-row-name">' + esc(book) + '</span>';
+    html += '<span class="tk-book-row-count">' + p.read + '/' + p.total + '</span>';
+    html += isOpen ? ICONS.chevDown : ICONS.chevRight;
+    html += '</button>';
+    if (isOpen) {
+      html += '<div class="tk-chapter-panel"><div class="tk-chapter-grid">';
+      for (let c = 1; c <= p.total; c++) {
+        const on = !!App.state.faith.chaptersRead[book + ':' + c];
+        html += '<button class="tk-chapter-cell ' + (on ? 'on' : '') + '" data-action="toggle-chapter" data-book="' + esc(book) + '" data-ch="' + c + '">' + c + '</button>';
+      }
+      html += '</div><div class="tk-chapter-actions">';
+      html += '<button class="tk-chapter-mark-all" data-action="mark-book" data-book="' + esc(book) + '" data-complete="1">Mark all read</button>';
+      html += '<button class="tk-chapter-mark-none" data-action="mark-book" data-book="' + esc(book) + '" data-complete="0">Clear</button>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderSectionGroup(sections) {
+    let html = '';
+    sections.forEach(function(section) {
+      html += '<div class="tk-book-section"><div class="tk-book-section-title">' + esc(section) + '</div><div class="tk-book-list">';
+      Object.keys(BIBLE[section]).forEach(function(book) { html += renderBookRow(book); });
+      html += '</div></div>';
+    });
+    return html;
+  }
+
+  const recentReadings = Object.entries(App.state.faith.dailyReadings)
+    .filter(function(e) { return e[1] && e[1].passage; })
+    .sort(function(a, b) { return b[0].localeCompare(a[0]); })
+    .slice(0, 8);
+
+  let html = '<div class="tk-tab-body">';
+  html += '<div class="tk-hero faith"><div class="tk-hero-left">';
+  html += '<div class="tk-hero-eyebrow">Faith</div><div class="tk-hero-title">Walking through the Word</div>';
+  html += '<div class="tk-stat-row"><div class="tk-stat-pill"><div class="tk-stat-value faith-c">' + totalChaptersRead + ' / ' + TOTAL_CHAPTERS + '</div><div class="tk-stat-label">Chapters read</div></div>';
+  html += '<div class="tk-stat-pill"><div class="tk-stat-value faith-c">' + streak + '</div><div class="tk-stat-label">Day streak</div></div></div>';
+  html += '</div><div class="tk-hero-progress"><svg viewBox="0 0 120 120" class="tk-ring">';
+  html += '<circle cx="60" cy="60" r="52" class="tk-ring-track"/>';
+  html += '<circle cx="60" cy="60" r="52" class="tk-ring-fill" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + (circumference * (1 - pct)) + '"/>';
+  html += '<text x="60" y="66" text-anchor="middle" class="tk-ring-text">' + Math.round(pct * 100) + '%</text></svg></div></div>';
+
+  html += '<div class="tk-card"><div class="tk-section-label">Today\'s reading — ' + fmtDateShort(today) + '</div>';
+  html += '<div class="tk-field-row"><input class="tk-input" id="faith-passage" placeholder="Passage (e.g. John 3:1–21)" value="' + esc(App.draft.passage) + '" /></div>';
+  html += '<textarea class="tk-textarea" id="faith-notes" placeholder="Notes, reflections, what stood out..." rows="3">' + esc(App.draft.notes) + '</textarea>';
+  html += '<div class="tk-field-row" style="justify-content:space-between;margin-top:10px;">';
+  html += '<label class="tk-checkbox-label"><input type="checkbox" id="faith-prayed" ' + (todayEntry && todayEntry.prayed ? 'checked' : '') + ' /><span>Prayed today</span></label>';
+  html += '<button class="tk-btn faith" data-action="save-reading">Save reading</button></div></div>';
+
+  html += '<div class="tk-card"><div class="tk-collapse-header" data-action="toggle-ot"><div class="tk-collapse-title">' + (App.expandedOT ? ICONS.chevDown : ICONS.chevRight) + '<span>Old Testament</span></div><span class="tk-collapse-count">' + otProg.read + '/' + otProg.total + ' ch</span></div>';
+  if (App.expandedOT) html += '<div class="tk-books-wrap">' + renderSectionGroup(OT_SECTIONS) + '</div>';
+  html += '</div>';
+
+  html += '<div class="tk-card"><div class="tk-collapse-header" data-action="toggle-nt"><div class="tk-collapse-title">' + (App.expandedNT ? ICONS.chevDown : ICONS.chevRight) + '<span>New Testament</span></div><span class="tk-collapse-count">' + ntProg.read + '/' + ntProg.total + ' ch</span></div>';
+  if (App.expandedNT) html += '<div class="tk-books-wrap">' + renderSectionGroup(NT_SECTIONS) + '</div>';
+  html += '</div>';
+
+  if (recentReadings.length > 0) {
+    html += '<div class="tk-card"><div class="tk-section-label">Reading log</div><div class="tk-log-list">';
+    recentReadings.forEach(function(entry) {
+      const date = entry[0], v = entry[1];
+      html += '<div class="tk-log-row"><div class="tk-log-date">' + fmtDateShort(date) + '</div><div class="tk-log-main">';
+      html += '<div class="tk-log-title">' + esc(v.passage) + (v.prayed ? ' <span class="tk-tag faith">prayed</span>' : '') + '</div>';
+      if (v.notes) html += '<div class="tk-log-sub">' + esc(v.notes) + '</div>';
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function attachFaithHandlers(root) {
+  const passageInput = root.querySelector('#faith-passage');
+  const notesInput = root.querySelector('#faith-notes');
+  const prayedInput = root.querySelector('#faith-prayed');
+  if (passageInput) passageInput.addEventListener('input', function(e) { App.draft.passage = e.target.value; });
+  if (notesInput) notesInput.addEventListener('input', function(e) { App.draft.notes = e.target.value; });
+  if (prayedInput) prayedInput.addEventListener('change', function() {
+    const today = todayStr();
+    update(function(s) {
+      const existing = s.faith.dailyReadings[today] || {};
+      s.faith.dailyReadings[today] = Object.assign({}, existing, { passage: App.draft.passage, notes: App.draft.notes, prayed: !existing.prayed });
+    });
+  });
+
+  root.querySelectorAll('[data-action="save-reading"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!App.draft.passage.trim()) return;
+      const today = todayStr();
+      update(function(s) {
+        const existing = s.faith.dailyReadings[today] || {};
+        s.faith.dailyReadings[today] = { passage: App.draft.passage, notes: App.draft.notes, prayed: existing.prayed || false, savedAt: Date.now() };
+      });
+    });
+  });
+
+  root.querySelectorAll('[data-action="toggle-ot"]').forEach(function(el) { el.addEventListener('click', function() { App.expandedOT = !App.expandedOT; render(); }); });
+  root.querySelectorAll('[data-action="toggle-nt"]').forEach(function(el) { el.addEventListener('click', function() { App.expandedNT = !App.expandedNT; render(); }); });
+
+  root.querySelectorAll('[data-action="toggle-book"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const book = el.getAttribute('data-book');
+      App.expandedBook = App.expandedBook === book ? null : book;
+      render();
+    });
+  });
+
+  root.querySelectorAll('[data-action="toggle-chapter"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const book = el.getAttribute('data-book');
+      const ch = el.getAttribute('data-ch');
+      const key = book + ':' + ch;
+      update(function(s) { s.faith.chaptersRead[key] = !s.faith.chaptersRead[key]; });
+    });
+  });
+
+  root.querySelectorAll('[data-action="mark-book"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const book = el.getAttribute('data-book');
+      const complete = el.getAttribute('data-complete') === '1';
+      const n = bookChapterCount(book);
+      update(function(s) { for (let c = 1; c <= n; c++) s.faith.chaptersRead[book + ':' + c] = complete; });
+    });
+  });
+}
+
+/* ============================================================
+   FITNESS TAB
+   ============================================================ */
+function renderFitnessTab() {
+  const today = todayStr();
+  const todaysActivities = App.state.fitness.activities.filter(function(a) { return a.date === today; });
+  const todaysMeals = App.state.fitness.meals.filter(function(m) { return m.date === today; });
+  const todayCalories = todaysMeals.reduce(function(sum, m) { return sum + (m.calories || 0); }, 0);
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+  const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+  const weekActivities = App.state.fitness.activities.filter(function(a) { return a.date >= weekAgoStr; });
+  const sortedWeights = App.state.fitness.weight.slice().sort(function(a, b) { return a.date.localeCompare(b.date); });
+  const latestWeight = sortedWeights[sortedWeights.length - 1];
+  const firstWeight = sortedWeights[0];
+  const weightDelta = (latestWeight && firstWeight && latestWeight.id !== firstWeight.id) ? (latestWeight.lbs - firstWeight.lbs) : null;
+  const todayWater = App.state.fitness.water[today] || 0;
+  const todaySleep = App.state.fitness.sleep[today] || '';
+  const recentActivities = App.state.fitness.activities.slice().sort(function(a, b) { return b.date.localeCompare(a.date) || b.createdAt - a.createdAt; }).slice(0, 10);
+
+  let html = '<div class="tk-tab-body">';
+  html += '<div class="tk-hero fitness"><div class="tk-hero-left"><div class="tk-hero-eyebrow">Fitness</div><div class="tk-hero-title">Body, fuel, and rest</div>';
+  html += '<div class="tk-stat-row"><div class="tk-stat-pill"><div class="tk-stat-value fitness-c">' + weekActivities.length + ' sessions</div><div class="tk-stat-label">This week</div></div>';
+  html += '<div class="tk-stat-pill"><div class="tk-stat-value fitness-c">' + (latestWeight ? latestWeight.lbs + ' lb' : '—') + '</div><div class="tk-stat-label">Weight</div></div></div></div></div>';
+
+  html += '<div class="tk-subnav">';
+  ['log', 'eating', 'body'].forEach(function(v) {
+    const labels = { log: 'Activity', eating: 'Eating & Drinking', body: 'Weight & Sleep' };
+    html += '<button class="' + (App.fitnessSubview === v ? 'active' : '') + '" data-action="fitness-subview" data-view="' + v + '">' + labels[v] + '</button>';
+  });
+  html += '</div>';
+
+  if (App.fitnessSubview === 'log') {
+    html += '<div class="tk-card"><div class="tk-section-label">Log an activity</div><div class="tk-type-toggle">';
+    ACTIVITY_TYPES.forEach(function(t) {
+      html += '<button class="tk-type-btn ' + (App.draft.actType === t.key ? 'active fitness' : '') + '" data-action="set-act-type" data-type="' + t.key + '">' + activityIcon(t.key) + ' ' + t.label + '</button>';
+    });
+    html += '</div>';
+    const placeholder = App.draft.actType === 'run' ? 'Distance / route (e.g. 5k trail)' : App.draft.actType === 'workout' ? 'What you trained (e.g. Push day)' : 'Sport / team (e.g. Soccer scrimmage)';
+    html += '<div class="tk-field-row"><input class="tk-input" id="act-detail" placeholder="' + placeholder + '" value="' + esc(App.draft.actDetail) + '" /><input class="tk-input tk-input-narrow" id="act-duration" placeholder="Minutes" type="number" value="' + esc(App.draft.actDuration) + '" /></div>';
+    html += '<textarea class="tk-textarea" id="act-notes" placeholder="Notes (optional)" rows="2">' + esc(App.draft.actNotes) + '</textarea>';
+    html += '<button class="tk-btn fitness" data-action="add-activity" style="margin-top:10px;">Add activity</button></div>';
+
+    if (todaysActivities.length > 0) {
+      html += '<div class="tk-card"><div class="tk-section-label">Today</div><div class="tk-log-list">';
+      todaysActivities.forEach(function(a) {
+        const label = (ACTIVITY_TYPES.find(function(t) { return t.key === a.type; }) || {}).label || 'Workout';
+        html += '<div class="tk-log-row"><div class="tk-log-icon fitness">' + activityIcon(a.type) + '</div><div class="tk-log-main">';
+        html += '<div class="tk-log-title">' + esc(a.detail || label) + (a.duration ? ' · ' + esc(a.duration) + ' min' : '') + '</div>';
+        if (a.notes) html += '<div class="tk-log-sub">' + esc(a.notes) + '</div>';
+        html += '</div><button class="tk-log-remove" data-action="remove-activity" data-id="' + a.id + '">' + ICONS.x + '</button></div>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '<div class="tk-card"><div class="tk-section-label">Recent history</div><div class="tk-log-list">';
+    if (recentActivities.length === 0) html += '<div class="tk-empty">No activities logged yet.</div>';
+    recentActivities.forEach(function(a) {
+      const label = (ACTIVITY_TYPES.find(function(t) { return t.key === a.type; }) || {}).label || 'Workout';
+      html += '<div class="tk-log-row"><div class="tk-log-date">' + fmtDateShort(a.date) + '</div><div class="tk-log-icon fitness">' + activityIcon(a.type) + '</div>';
+      html += '<div class="tk-log-main"><div class="tk-log-title">' + esc(a.detail || label) + (a.duration ? ' · ' + esc(a.duration) + ' min' : '') + '</div></div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (App.fitnessSubview === 'eating') {
+    html += '<div class="tk-card"><div class="tk-section-label">Log a meal</div>';
+    html += '<div class="tk-field-row"><input class="tk-input" id="meal-desc" placeholder="What did you eat?" value="' + esc(App.draft.mealDesc) + '" /><input class="tk-input tk-input-narrow" id="meal-cal" placeholder="Calories" type="number" value="' + esc(App.draft.mealCal) + '" /></div>';
+    html += '<button class="tk-btn fitness" data-action="add-meal" style="margin-top:10px;">Add meal</button></div>';
+
+    html += '<div class="tk-card"><div class="tk-section-label">Today\'s meals' + (todayCalories > 0 ? ' <span class="tk-inline-stat">· ' + todayCalories + ' cal</span>' : '') + '</div><div class="tk-log-list">';
+    if (todaysMeals.length === 0) html += '<div class="tk-empty">Nothing logged yet today.</div>';
+    todaysMeals.forEach(function(m) {
+      html += '<div class="tk-log-row"><div class="tk-log-icon fitness">' + ICONS.utensils + '</div><div class="tk-log-main">';
+      html += '<div class="tk-log-title">' + esc(m.description) + (m.calories ? ' · ' + m.calories + ' cal' : '') + '</div><div class="tk-log-sub">' + esc(m.time) + '</div>';
+      html += '</div><button class="tk-log-remove" data-action="remove-meal" data-id="' + m.id + '">' + ICONS.x + '</button></div>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="tk-card"><div class="tk-section-label">Water intake — today</div>';
+    html += '<div class="tk-water-row"><span class="tk-water-icon">' + ICONS.droplet + '</span><div class="tk-water-value">' + todayWater + ' oz</div>';
+    html += '<div class="tk-water-btns"><button data-action="water-delta" data-delta="-8">−8oz</button><button data-action="water-delta" data-delta="8">+8oz</button><button data-action="water-delta" data-delta="16">+16oz</button></div></div>';
+    html += '<div class="tk-progress-track"><div class="tk-progress-fill" style="width:' + Math.min(100, (todayWater / 100) * 100) + '%;background:var(--fitness);"></div></div></div>';
+  }
+
+  if (App.fitnessSubview === 'body') {
+    html += '<div class="tk-card"><div class="tk-section-label">Log weight</div>';
+    html += '<div class="tk-field-row"><input class="tk-input tk-input-narrow" id="weight-val" placeholder="Weight (lb)" type="number" step="0.1" value="' + esc(App.draft.weightVal) + '" /><button class="tk-btn fitness" data-action="add-weight">Save today\'s weight</button></div>';
+    if (weightDelta !== null) {
+      html += '<div class="tk-delta-note">' + (weightDelta <= 0 ? ICONS.trendDown : ICONS.trendUp) + Math.abs(weightDelta).toFixed(1) + ' lb ' + (weightDelta <= 0 ? 'down' : 'up') + ' since ' + fmtDateShort(firstWeight.date) + '</div>';
+    }
+    if (sortedWeights.length > 0) {
+      html += '<div class="tk-log-list" style="margin-top:12px;">';
+      sortedWeights.slice().reverse().slice(0, 8).forEach(function(w) {
+        html += '<div class="tk-log-row"><div class="tk-log-date">' + fmtDateShort(w.date) + '</div><div class="tk-log-main"><div class="tk-log-title">' + w.lbs + ' lb</div></div></div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="tk-card"><div class="tk-section-label">Sleep — last night</div>';
+    html += '<div class="tk-field-row"><span class="tk-water-icon">' + ICONS.moon + '</span><input class="tk-input tk-input-narrow" id="sleep-val" placeholder="Hours" type="number" step="0.25" value="' + esc(todaySleep) + '" /><span class="tk-inline-stat">hours</span></div></div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function attachFitnessHandlers(root) {
+  root.querySelectorAll('[data-action="fitness-subview"]').forEach(function(el) {
+    el.addEventListener('click', function() { App.fitnessSubview = el.getAttribute('data-view'); render(); });
+  });
+  root.querySelectorAll('[data-action="set-act-type"]').forEach(function(el) {
+    el.addEventListener('click', function() { App.draft.actType = el.getAttribute('data-type'); render(); });
+  });
+
+  const actDetail = root.querySelector('#act-detail');
+  const actDuration = root.querySelector('#act-duration');
+  const actNotes = root.querySelector('#act-notes');
+  if (actDetail) actDetail.addEventListener('input', function(e) { App.draft.actDetail = e.target.value; });
+  if (actDuration) actDuration.addEventListener('input', function(e) { App.draft.actDuration = e.target.value; });
+  if (actNotes) actNotes.addEventListener('input', function(e) { App.draft.actNotes = e.target.value; });
+
+  root.querySelectorAll('[data-action="add-activity"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!App.draft.actDetail.trim() && !App.draft.actDuration) return;
+      const today = todayStr();
+      const entry = { id: uid(), date: today, type: App.draft.actType, detail: App.draft.actDetail, duration: App.draft.actDuration, notes: App.draft.actNotes, createdAt: Date.now() };
+      update(function(s) { s.fitness.activities.unshift(entry); });
+      App.draft.actDetail = ''; App.draft.actDuration = ''; App.draft.actNotes = '';
+    });
+  });
+  root.querySelectorAll('[data-action="remove-activity"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = btn.getAttribute('data-id');
+      update(function(s) { s.fitness.activities = s.fitness.activities.filter(function(a) { return a.id !== id; }); });
+    });
+  });
+
+  const mealDesc = root.querySelector('#meal-desc');
+  const mealCal = root.querySelector('#meal-cal');
+  if (mealDesc) mealDesc.addEventListener('input', function(e) { App.draft.mealDesc = e.target.value; });
+  if (mealCal) mealCal.addEventListener('input', function(e) { App.draft.mealCal = e.target.value; });
+  root.querySelectorAll('[data-action="add-meal"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!App.draft.mealDesc.trim()) return;
+      const today = todayStr();
+      const entry = { id: uid(), date: today, time: new Date().toTimeString().slice(0, 5), description: App.draft.mealDesc, calories: App.draft.mealCal ? Number(App.draft.mealCal) : null };
+      update(function(s) { s.fitness.meals.unshift(entry); });
+      App.draft.mealDesc = ''; App.draft.mealCal = '';
+    });
+  });
+  root.querySelectorAll('[data-action="remove-meal"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = btn.getAttribute('data-id');
+      update(function(s) { s.fitness.meals = s.fitness.meals.filter(function(m) { return m.id !== id; }); });
+    });
+  });
+
+  root.querySelectorAll('[data-action="water-delta"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const delta = Number(btn.getAttribute('data-delta'));
+      const today = todayStr();
+      update(function(s) { s.fitness.water[today] = Math.max(0, (s.fitness.water[today] || 0) + delta); });
+    });
+  });
+
+  const weightVal = root.querySelector('#weight-val');
+  if (weightVal) weightVal.addEventListener('input', function(e) { App.draft.weightVal = e.target.value; });
+  root.querySelectorAll('[data-action="add-weight"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!App.draft.weightVal) return;
+      const today = todayStr();
+      const lbs = Number(App.draft.weightVal);
+      update(function(s) { s.fitness.weight = [{ id: uid(), date: today, lbs: lbs }].concat(s.fitness.weight.filter(function(w) { return w.date !== today; })); });
+      App.draft.weightVal = '';
+    });
+  });
+
+  const sleepVal = root.querySelector('#sleep-val');
+  if (sleepVal) sleepVal.addEventListener('change', function(e) {
+    const today = todayStr();
+    const val = e.target.value ? Number(e.target.value) : '';
+    update(function(s) { s.fitness.sleep[today] = val; });
+  });
+}
+
+/* ============================================================
+   FINANCE TAB
+   ============================================================ */
+function financeRange(period) {
+  const today = todayStr();
+  if (period === 'daily') return { start: today, label: 'Today' };
+  if (period === 'weekly') return { start: startOfWeek(today), label: 'This week' };
+  if (period === 'monthly') return { start: monthKey(today) + '-01', label: 'This month' };
+  return { start: yearKey(today) + '-01-01', label: 'This year' };
+}
+
+function renderFinanceTab() {
+  const entries = App.state.finance.entries;
+  const range = financeRange(App.financePeriod);
+  const inRange = entries.filter(function(e) { return e.date >= range.start; });
+  const income = inRange.filter(function(e) { return e.type === 'income'; }).reduce(function(s, e) { return s + e.amount; }, 0);
+  const expense = inRange.filter(function(e) { return e.type === 'expense'; }).reduce(function(s, e) { return s + e.amount; }, 0);
+  const net = income - expense;
+
+  const buckets = {};
+  const keyFn = App.financePeriod === 'daily' ? function(d) { return d; } : App.financePeriod === 'weekly' ? startOfWeek : App.financePeriod === 'monthly' ? monthKey : yearKey;
+  entries.forEach(function(e) {
+    const k = keyFn(e.date);
+    if (!buckets[k]) buckets[k] = { income: 0, expense: 0 };
+    buckets[k][e.type] += e.amount;
+  });
+  const periodBuckets = Object.entries(buckets).sort(function(a, b) { return b[0].localeCompare(a[0]); }).slice(0, 8);
+  const maxBucketVal = Math.max(1, Math.max.apply(null, periodBuckets.map(function(b) { return Math.max(b[1].income, b[1].expense); }).concat([0])));
+
+  const catMap = {};
+  inRange.filter(function(e) { return e.type === 'expense'; }).forEach(function(e) { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const categoryBreakdown = Object.entries(catMap).sort(function(a, b) { return b[1] - a[1]; });
+
+  const recentEntries = entries.slice().sort(function(a, b) { return b.date.localeCompare(a.date) || b.createdAt - a.createdAt; }).slice(0, 10);
+  const allTimeNet = entries.filter(function(e) { return e.type === 'income'; }).reduce(function(s, e) { return s + e.amount; }, 0) - entries.filter(function(e) { return e.type === 'expense'; }).reduce(function(s, e) { return s + e.amount; }, 0);
+
+  let html = '<div class="tk-tab-body">';
+  html += '<div class="tk-hero finance"><div class="tk-hero-left"><div class="tk-hero-eyebrow">Finances</div><div class="tk-hero-title">Every dollar, accounted for</div>';
+  html += '<div class="tk-stat-row"><div class="tk-stat-pill"><div class="tk-stat-value finance-c">' + fmtMoney(allTimeNet) + '</div><div class="tk-stat-label">Net flow (all-time)</div></div></div></div></div>';
+
+  html += '<div class="tk-card"><div class="tk-section-label">Add a transaction</div><div class="tk-type-toggle">';
+  html += '<button class="tk-type-btn ' + (App.financeType === 'income' ? 'active finance' : '') + '" data-action="set-fin-type" data-type="income">' + ICONS.trendUp + ' Income</button>';
+  html += '<button class="tk-type-btn ' + (App.financeType === 'expense' ? 'active finance' : '') + '" data-action="set-fin-type" data-type="expense">' + ICONS.trendDown + ' Spending</button></div>';
+  html += '<div class="tk-field-row"><select class="tk-input" id="fin-category">';
+  (App.financeType === 'income' ? FIN_CATEGORIES_INCOME : FIN_CATEGORIES_EXPENSE).forEach(function(c) {
+    html += '<option value="' + esc(c) + '" ' + (App.financeCategory === c ? 'selected' : '') + '>' + esc(c) + '</option>';
+  });
+  html += '</select><input class="tk-input tk-input-narrow" id="fin-amount" placeholder="Amount" type="number" step="0.01" value="' + esc(App.draft.finAmount) + '" /></div>';
+  html += '<input class="tk-input" id="fin-note" placeholder="Note (optional)" value="' + esc(App.draft.finNote) + '" style="margin-top:8px;" />';
+  html += '<button class="tk-btn finance" data-action="add-transaction" style="margin-top:10px;">Add transaction</button></div>';
+
+  html += '<div class="tk-subnav">';
+  ['daily', 'weekly', 'monthly', 'yearly'].forEach(function(p) {
+    html += '<button class="' + (App.financePeriod === p ? 'active' : '') + '" data-action="set-fin-period" data-period="' + p + '">' + p.charAt(0).toUpperCase() + p.slice(1) + '</button>';
+  });
+  html += '</div>';
+
+  html += '<div class="tk-card"><div class="tk-section-label">' + range.label + '</div><div class="tk-fin-summary">';
+  html += '<div class="tk-fin-stat"><div class="tk-fin-stat-label">' + ICONS.trendUp + ' Income</div><div class="tk-fin-stat-value income">' + fmtMoney(income) + '</div></div>';
+  html += '<div class="tk-fin-stat"><div class="tk-fin-stat-label">' + ICONS.trendDown + ' Spending</div><div class="tk-fin-stat-value expense">' + fmtMoney(expense) + '</div></div>';
+  html += '<div class="tk-fin-stat"><div class="tk-fin-stat-label">' + ICONS.dollar + ' Net</div><div class="tk-fin-stat-value ' + (net >= 0 ? 'income' : 'expense') + '">' + fmtMoney(net) + '</div></div></div></div>';
+
+  if (periodBuckets.length > 0) {
+    html += '<div class="tk-card"><div class="tk-section-label">Compare across ' + App.financePeriod + ' periods</div><div class="tk-bucket-chart">';
+    periodBuckets.forEach(function(b) {
+      const k = b[0], v = b[1];
+      const label = App.financePeriod === 'yearly' ? k : fmtDateShort(k.length === 7 ? k + '-01' : k);
+      html += '<div class="tk-bucket-col"><div class="tk-bucket-bars">';
+      html += '<div class="tk-bucket-bar income" style="height:' + ((v.income / maxBucketVal) * 100) + '%" title="' + fmtMoney(v.income) + '"></div>';
+      html += '<div class="tk-bucket-bar expense" style="height:' + ((v.expense / maxBucketVal) * 100) + '%" title="' + fmtMoney(v.expense) + '"></div>';
+      html += '</div><div class="tk-bucket-label">' + esc(label) + '</div></div>';
+    });
+    html += '</div><div class="tk-legend"><span><i class="income"></i> Income</span><span><i class="expense"></i> Spending</span></div></div>';
+  }
+
+  if (categoryBreakdown.length > 0) {
+    html += '<div class="tk-card"><div class="tk-section-label">Spending by category — ' + range.label.toLowerCase() + '</div><div class="tk-cat-list">';
+    categoryBreakdown.forEach(function(cb) {
+      const cat = cb[0], amt = cb[1];
+      html += '<div class="tk-cat-row"><div class="tk-cat-name">' + esc(cat) + '</div>';
+      html += '<div class="tk-progress-track"><div class="tk-progress-fill" style="width:' + ((amt / expense) * 100) + '%;background:var(--finance);"></div></div>';
+      html += '<div class="tk-cat-amt">' + fmtMoney(amt) + '</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  html += '<div class="tk-card"><div class="tk-section-label">Recent transactions</div><div class="tk-log-list">';
+  if (recentEntries.length === 0) html += '<div class="tk-empty">No transactions yet.</div>';
+  recentEntries.forEach(function(e) {
+    html += '<div class="tk-log-row"><div class="tk-log-date">' + fmtDateShort(e.date) + '</div><div class="tk-log-main"><div class="tk-log-title">' + esc(e.category) + (e.note ? ' · ' + esc(e.note) : '') + '</div></div>';
+    html += '<div class="tk-log-amt ' + e.type + '">' + (e.type === 'income' ? '+' : '−') + fmtMoney(e.amount).replace('-', '') + '</div>';
+    html += '<button class="tk-log-remove" data-action="remove-transaction" data-id="' + e.id + '">' + ICONS.x + '</button></div>';
+  });
+  html += '</div></div>';
+
+  html += '</div>';
+  return html;
+}
+
+function attachFinanceHandlers(root) {
+  root.querySelectorAll('[data-action="set-fin-type"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      App.financeType = el.getAttribute('data-type');
+      App.financeCategory = App.financeType === 'income' ? FIN_CATEGORIES_INCOME[0] : FIN_CATEGORIES_EXPENSE[0];
+      render();
+    });
+  });
+  root.querySelectorAll('[data-action="set-fin-period"]').forEach(function(el) {
+    el.addEventListener('click', function() { App.financePeriod = el.getAttribute('data-period'); render(); });
+  });
+
+  const catSelect = root.querySelector('#fin-category');
+  if (catSelect) catSelect.addEventListener('change', function(e) { App.financeCategory = e.target.value; });
+  const amountInput = root.querySelector('#fin-amount');
+  if (amountInput) amountInput.addEventListener('input', function(e) { App.draft.finAmount = e.target.value; });
+  const noteInput = root.querySelector('#fin-note');
+  if (noteInput) noteInput.addEventListener('input', function(e) { App.draft.finNote = e.target.value; });
+
+  root.querySelectorAll('[data-action="add-transaction"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!App.draft.finAmount || Number(App.draft.finAmount) <= 0) return;
+      const today = todayStr();
+      const entry = { id: uid(), date: today, type: App.financeType, category: App.financeCategory, amount: Number(App.draft.finAmount), note: App.draft.finNote, createdAt: Date.now() };
+      update(function(s) { s.finance.entries.unshift(entry); });
+      App.draft.finAmount = ''; App.draft.finNote = '';
+    });
+  });
+  root.querySelectorAll('[data-action="remove-transaction"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = btn.getAttribute('data-id');
+      update(function(s) { s.finance.entries = s.finance.entries.filter(function(e) { return e.id !== id; }); });
+    });
+  });
+}
+
+/* ============================================================
+   INSTALL BANNER
+   ============================================================ */
+function isInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+let installAvailable = false;
+let installDismissed = (function() { try { return sessionStorage.getItem('rol-install-dismissed') === '1'; } catch (e) { return false; } })();
+window.addEventListener('rol-install-available', function() { installAvailable = true; renderHeaderOnly(); });
+window.addEventListener('appinstalled', function() { installAvailable = false; renderHeaderOnly(); });
+
+function renderInstallBanner() {
+  if (isInstalled() || installDismissed || !installAvailable) return '';
+  let html = '<div class="tk-install-banner"><div class="tk-install-text">' + ICONS.download + '<span>Install Rule of Life on this device for one-tap access.</span></div>';
+  html += '<div class="tk-install-actions"><button class="tk-install-btn" data-action="do-install">Install</button>';
+  html += '<button class="tk-install-dismiss" data-action="dismiss-install">' + ICONS.x + '</button></div></div>';
+  return html;
+}
+function attachInstallHandlers(root) {
+  root.querySelectorAll('[data-action="do-install"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const promptEvent = window.__deferredInstallPrompt;
+      if (!promptEvent) return;
+      promptEvent.prompt();
+      promptEvent.userChoice.then(function() { window.__deferredInstallPrompt = null; installAvailable = false; render(); });
+    });
+  });
+  root.querySelectorAll('[data-action="dismiss-install"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      installDismissed = true;
+      try { sessionStorage.setItem('rol-install-dismissed', '1'); } catch (e) {}
+      render();
+    });
+  });
+}
+
+/* ============================================================
+   EXPORT / IMPORT
+   ============================================================ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(App.state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rule-of-life-backup-' + todayStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function handleFileChosen(file) {
+  App.importError = '';
+  const reader = new FileReader();
+  reader.onload = function() {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed || typeof parsed !== 'object' || !('faith' in parsed || 'fitness' in parsed || 'finance' in parsed)) {
+        App.importError = "That file doesn't look like a Rule of Life backup.";
+        render();
+        return;
+      }
+      App.pendingImport = { data: parsed, filename: file.name };
+      render();
+    } catch (e) {
+      App.importError = "Couldn't read that file — make sure it's the .json backup this app exported.";
+      render();
+    }
+  };
+  reader.readAsText(file);
+}
+function confirmImport() {
+  if (!App.pendingImport) return;
+  const merged = deepMerge(defaultState(), App.pendingImport.data);
+  App.state = merged;
+  persistState(merged);
+  App.pendingImport = null;
+  App.saveStatus = 'saved';
+  render();
+}
+
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
+function renderHeader() {
+  let html = '<header class="tk-app-header"><div class="tk-app-title"><span class="tk-app-title-mark">&#10022;</span> Rule of Life</div>';
+  html += '<div class="tk-header-right">';
+  html += '<button class="tk-icon-btn" data-action="trigger-import" title="Restore from a backup file">' + ICONS.upload + '</button>';
+  html += '<button class="tk-icon-btn" data-action="export-data" title="Download a backup of your data">' + ICONS.download + '</button>';
+  html += '<div class="tk-save-indicator">' + (App.saveStatus === 'saving' ? 'Saving…' : App.saveStatus === 'saved' ? 'Saved' : '&nbsp;') + '</div>';
+  html += '</div></header>';
+  return html;
+}
+
+function render() {
+  const root = document.getElementById('root');
+  let html = '<div class="tk-root"><div class="tk-shell">';
+  html += renderInstallBanner();
+  html += renderHeader();
+  if (App.importError) {
+    html += '<div class="tk-import-error">' + ICONS.alert + '<span>' + esc(App.importError) + '</span><button data-action="dismiss-import-error">' + ICONS.x + '</button></div>';
+  }
+  html += '<nav class="tk-tabs">';
+  html += '<button class="tk-tab-btn faith ' + (App.tab === 'faith' ? 'active' : '') + '" data-action="set-tab" data-tab="faith">' + ICONS.book + ' Faith</button>';
+  html += '<button class="tk-tab-btn fitness ' + (App.tab === 'fitness' ? 'active' : '') + '" data-action="set-tab" data-tab="fitness">' + ICONS.dumbbell + ' Fitness</button>';
+  html += '<button class="tk-tab-btn finance ' + (App.tab === 'finance' ? 'active' : '') + '" data-action="set-tab" data-tab="finance">' + ICONS.dollar + ' Finances</button>';
+  html += '</nav><main>';
+  if (App.tab === 'faith') html += renderFaithTab();
+  if (App.tab === 'fitness') html += renderFitnessTab();
+  if (App.tab === 'finance') html += renderFinanceTab();
+  html += '</main></div>';
+
+  if (App.pendingImport) {
+    html += '<div class="tk-modal-backdrop" data-action="close-modal-backdrop"><div class="tk-modal" data-stop-prop="1">';
+    html += '<div class="tk-modal-icon">' + ICONS.alert + '</div><div class="tk-modal-title">Replace all current data?</div>';
+    html += '<div class="tk-modal-body">Importing <strong>' + esc(App.pendingImport.filename) + '</strong> will overwrite everything currently on this device — Faith, Fitness, and Finances. This can\'t be undone unless you have another backup.</div>';
+    html += '<div class="tk-modal-actions"><button class="tk-modal-cancel" data-action="cancel-import">Cancel</button><button class="tk-modal-confirm" data-action="confirm-import">Replace data</button></div>';
+    html += '</div></div>';
+  }
+
+  html += '<input type="file" id="hidden-file-input" accept="application/json" style="display:none;" />';
+  html += '</div>';
+
+  root.innerHTML = html;
+  attachHandlers(root);
+}
+
+function renderHeaderOnly() {
+  // lightweight re-render just for the save indicator / install banner ticking, without losing scroll on unrelated typing
+  render();
+}
+
+function attachHandlers(root) {
+  root.querySelectorAll('[data-action="set-tab"]').forEach(function(el) {
+    el.addEventListener('click', function() { App.tab = el.getAttribute('data-tab'); render(); });
+  });
+
+  root.querySelectorAll('[data-action="export-data"]').forEach(function(el) { el.addEventListener('click', exportData); });
+
+  const fileInput = root.querySelector('#hidden-file-input');
+  root.querySelectorAll('[data-action="trigger-import"]').forEach(function(el) {
+    el.addEventListener('click', function() { fileInput.click(); });
+  });
+  if (fileInput) fileInput.addEventListener('change', function(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (file) handleFileChosen(file);
+  });
+
+  root.querySelectorAll('[data-action="dismiss-import-error"]').forEach(function(el) {
+    el.addEventListener('click', function() { App.importError = ''; render(); });
+  });
+  root.querySelectorAll('[data-action="cancel-import"]').forEach(function(el) { el.addEventListener('click', function() { App.pendingImport = null; render(); }); });
+  root.querySelectorAll('[data-action="confirm-import"]').forEach(function(el) { el.addEventListener('click', confirmImport); });
+  root.querySelectorAll('[data-action="close-modal-backdrop"]').forEach(function(el) {
+    el.addEventListener('click', function(e) { if (e.target === el) { App.pendingImport = null; render(); } });
+  });
+
+  attachInstallHandlers(root);
+  if (App.tab === 'faith') attachFaithHandlers(root);
+  if (App.tab === 'fitness') attachFitnessHandlers(root);
+  if (App.tab === 'finance') attachFinanceHandlers(root);
+}
+
+/* ============================================================
+   BOOTSTRAP
+   ============================================================ */
+(function init() {
+  const stored = loadState();
+  if (stored) App.state = deepMerge(defaultState(), stored);
+  render();
+})();
+</script>
+</body>
+</html>
